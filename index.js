@@ -2,7 +2,8 @@ var unorm = require('unorm')
 var assert = require('assert')
 var pbkdf2 = require('react-native-crypto').pbkdf2Sync
 var createHash = require('react-native-crypto').createHash
-var randomBytes = require('react-native-randombytes').randomBytes
+//var randomBytes = require('react-native-randombytes').randomBytes
+import { asyncRandomBytes } from 'react-native-secure-randombytes';
 
 var DEFAULT_WORDLIST = require('./wordlists/en.json')
 
@@ -71,19 +72,12 @@ function entropyToMnemonic(entropy, wordlist) {
   return words.join(' ')
 }
 
-function generateMnemonic(strength, rng, wordlist) {
-  return new Promise((resolve, reject) => {
-    strength = strength || 128
-    rng = rng || randomBytes
-
-    rng(strength / 8, (error, randomBytesBuffer) => {
-      if (error) {
-        reject(error)
-      } else {
-        resolve(entropyToMnemonic(randomBytesBuffer.toString('hex'), wordlist))
-      }
-    })
-  })
+async function generateMnemonic(strength, rng, wordlist) {
+  strength = strength || 128;
+  //rng = rng || asyncRandomBytes
+  var randomBytesBuffer = await asyncRandomBytes(strength / 8);
+    
+  return entropyToMnemonic(randomBytesBuffer.toString('hex'), wordlist);
 }
 
 function validateMnemonic(mnemonic, wordlist) {
